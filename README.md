@@ -18,20 +18,25 @@ Download the repository to a directory in your load-path.
 ```console
 $ git clone https://github.com/MirkoHernandez/tab-bar-jump
 ```
+Then enable the package.
 
 ```emacs-lisp
 (require tab-bar-jump)
 ```
 
+Alternative the package can be installed using M-x `package-install-file`.
+M-x `package-initialize` may be required to immediately recognize the
+package after installation.
+
 # Usage
 
 The `tbj-jump` command creates and opens a transient using a
 configuration specified in `tbj-groups`: an alist of group names (a
-string) and transient keybinding.
+string describing the group name) and transient keybinding.
 
 ``` emacs-lisp
 (setq tbj-groups 
-   '(("prog" ("j" "k" "l" ";" "'" "J" "K" "L" ":" "\""))
+	'(("prog" ("j" "k" "l" ";" "'" "J" "K" "L" ":" "\""))
 	("prog2" ("n" "m" "," "." "/"))
 	("prog3" ("a" "s" "d" "f" "g"))
 	("prog4" ("z" "x" "c" "v" "b"))
@@ -51,8 +56,9 @@ Cycle backwards the current group's tabs.
 
 ### tbj-save-state
 
-The a group tabs can be saved for later use in the same Emacs session
-(this is non persistent).
+A group's current tabs can be saved for later use in the same Emacs
+session (this is non persistent). This enables changing the buffers in
+some of the tabs and then go back to a previous arrangement.
 
 ### tbj-restore-state
 
