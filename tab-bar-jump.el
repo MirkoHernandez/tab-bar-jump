@@ -38,6 +38,8 @@
 ;;;; Variables
 (defvar tbj-state-table (make-hash-table :test 'equal))
 
+(defvar tbj-buffer-table (make-hash-table :test 'equal))
+
 (defvar tbj-groups nil
   "Should be an ALIST that describe groups and keybindings.
 Each key should be a string that will name a tab-bar group.
@@ -123,13 +125,35 @@ INDEX is the index of that tab in that group."
      (interactive)
      (tbj-goto-tab ,group ,index)))
 
+(defun tbj-create-buffer-key (key)
+  (let* ((curr-tab (tab-bar--current-tab))
+	 (group (alist-get 'group curr-tab))
+	 (g-tabs  (tbj-filter-tabs group))
+	 (g-index (cl-position curr-tab g-tabs :test 'equal)))
+    (format "%s:%s:%s" key group g-index)))
+
+(defun tbj-create-goto-buffer-command (key)
+  "Create  a go  to  buffer command.  KEY  is the  key  used in  the
+transient. If there is no buffer  associated with that key (or if
+the command is  called with a prefix argument),  then the current
+buffer is assigned to that key." 
+  `(lambda ()
+     (interactive)
+     (let* ((buffer-key (tbj-create-buffer-key ,key))
+	    (buffer  (gethash buffer-key tbj-buffer-table)))
+       (cond  ((and buffer (buffer-live-p buffer) (not current-prefix-arg))
+	       (switch-to-buffer buffer))
+	      ((and buffer (file-exists-p (buffer-file-name buffer)) (not current-prefix-arg))
+	       (find-file (buffer-file-name buffer)))
+	      (t
+	       (puthash buffer-key (current-buffer) tbj-buffer-table))))))
+
 (defun tbj-cycle-current-group (&optional reverse)
   "Cycle forward between the tab-bars of the current tab's group.
 REVERSE when non-nil cycles the tab-bars backwards."
   (interactive)
   (if-let* ((curr-tab (tab-bar--current-tab))
-	    (group (alist-get 'group
-			      curr-tab))
+	    (group (alist-get 'group curr-tab))
 	    (g-tabs  (tbj-filter-tabs group))
 	    (g-index (cl-position curr-tab g-tabs :test 'equal))
 	    (next-tab (elt g-tabs (mod (if reverse (1- g-index) (1+ g-index)) (length g-tabs))))
@@ -184,6 +208,53 @@ KEYS is a list of strings describing keys."
 		 (tbj-create-transient-group (cl-first g)  (cl-second g)))
 	       (when (= column (1- tbj-max-columns))
 		 (cl-incf row))))))
+
+(transient-define-prefix tbj-buffer-transient ()
+  "tbj-buffer-transient is a transient for usage with `tbj-buffer-jump'."
+  [[]] [[]] [[]])
+
+(defun tbj-create-buffer-transient-group (group keys)
+  "Create a transient group for usage with transient.
+GROUP is the name of the tab-bar group.
+KEYS is a list of strings describing keys."
+  (vconcat
+   (list  group)
+   (remove nil
+	   (cl-mapcar (lambda (k)
+			(list k (format "%s:%s" k (if-let ((buffer-name (buffer-file-name (gethash (tbj-create-buffer-key k) tbj-buffer-table)))) 
+							   buffer-name "unassigned"))
+			      (tbj-create-goto-buffer-command
+			       k )
+			      ))
+		      keys))))
+
+(defun tbj-redefine-buffer-transient ()
+  "Redefine  `tbj-buffer-transient' using  tbj-groups. for  setting jump  to
+buffer commands."
+  (interactive)
+  (transient-define-prefix tbj-buffer-transient ()
+    "Redefinition of tbj-buffer-transient."
+    [[]] [[]] [[]] [[]])
+  (let* ((row 0))
+    (cl-loop for g in tbj-groups
+	     do
+	     (let* ((index  (cl-position g tbj-groups  :test 'equal))
+		    (column (mod index tbj-max-columns)))
+	       (transient-append-suffix 'tbj-buffer-transient (list (1- row) column)
+		 (tbj-create-buffer-transient-group (cl-first g)  (cl-second g)))
+	       (when (= column (1- tbj-max-columns))
+		 (cl-incf row))))))
+
+(defun tbj-buffer-jump ()
+  "Go to a buffer saved in `tbj-buffer-table' using `tbj-buffer-transient'."
+  (interactive)
+  (if (not tbj-groups)
+      (message "%s" (propertize
+		     "tbj-groups is empty, it should be defined as an ALIST."
+		     'face  'font-lock-warning-face))
+    ;; TODO: cache the transient creation.
+    (tbj-redefine-buffer-transient)
+    (tbj-buffer-transient)))
 
 (defun tbj-jump ()
   "Go to a grouped tab-bar defined in `tbj-groups' using `tbj-transient'."
