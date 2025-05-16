@@ -1,11 +1,11 @@
 # tab-bar-jump 
 
 tab-bar-jump (abbreviated tbj) is a set of commands for creating and
-navigating tab-bars and also navigate buffers of those tab-bars. Tab
-bars belonging to a specific group can be easily created using a
-keybinding, once created the same keybinding can be used for quick
-navigation. This approach allows the management of many tab-bars (up
-to dozens) in a very convenient way.
+navigating tab-bars and also navigate saved buffers opened in those
+tab-bars. Tab bars belonging to a specific group can be easily created
+using a keybinding, once created the same keybinding can be used for
+quick navigation. This approach allows the management of many tab-bars
+(up to dozens) in a very convenient way.
 
 
 # Requirements
@@ -32,14 +32,11 @@ package after installation.
 
 # Usage
 
-The `tbj-jump` command creates and opens a transient using a
-configuration specified in `tbj-groups`: an alist of group names (a
-string describing the group name) and transient keybinding (they
-usually involve a single letter).
+In order to use `tbj-jump`, first `tbj-groups` must be configured.
 
 > [!NOTE] 
-> tab-bar groups can be ignored, they are provided primarily to organize
-> each tab-bar in the transient.
+> tab-bar groups are provided primarily to organize each
+> tab-bar in the transient.
 
 ``` emacs-lisp
 (setq tbj-groups 
@@ -50,7 +47,13 @@ usually involve a single letter).
 	("notes" ("q" "w" "e" "r" "t" "y"))
 	("org" ("u" "i" "o" "p"))))
 ```
+## tbj-jump 
+The `tbj-jump` command then creates and opens a transient using a
+configuration specified in `tbj-groups`: an alist of group names (a
+string describing the group name) and transient keybinding (they
+usually involve a single letter).
 
+## tbj-buffer-jump 
 The `tbj-buffer-jump` can be used to navigate between saved buffers
 opened in a given tab-bar. It uses the same groups and keys that are
 set in `tbj-groups`.
@@ -75,3 +78,11 @@ some of the tabs and then go back to a previous arrangement.
 
 Restore a group state's tab-bars.
 
+
+### tbj-buffer-next
+
+Navigate to the next saved buffer in the current tab-bar.
+
+### tbj-buffer-previous
+
+Navigate to the previous saved buffer in the current tab-bar.
