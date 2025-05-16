@@ -225,8 +225,8 @@ KEYS is a list of strings describing keys."
    (list  group)
    (remove nil
 	   (cl-mapcar (lambda (k)
-			(list k (format "%s:%s" k (if-let ((buffer-name (buffer-file-name (gethash (tbj-create-buffer-key k) tbj-buffer-table)))) 
-							   buffer-name "unassigned"))
+			(list k (format "%s"  (if-let ((buffer-name (buffer-file-name (gethash (tbj-create-buffer-key k) tbj-buffer-table)))) 
+							   buffer-name ""))
 			      (tbj-create-goto-buffer-command
 			       k )
 			      ))
