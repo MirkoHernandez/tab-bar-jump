@@ -1,10 +1,12 @@
 # tab-bar-jump 
 
 tab-bar-jump (abbreviated tbj) is a set of commands for creating and
-navigating grouped tab-bars. Tab bars belonging to a specific group
-can be easily created using a keybinding, once created the same
-keybinding can be used for quick navigation. This approach allows the
-management of many tab-bars (up to dozens) in a very convenient way.
+navigating tab-bars and also navigate buffers of those tab-bars. Tab
+bars belonging to a specific group can be easily created using a
+keybinding, once created the same keybinding can be used for quick
+navigation. This approach allows the management of many tab-bars (up
+to dozens) in a very convenient way.
+
 
 # Requirements
 
@@ -32,17 +34,26 @@ package after installation.
 
 The `tbj-jump` command creates and opens a transient using a
 configuration specified in `tbj-groups`: an alist of group names (a
-string describing the group name) and transient keybinding.
+string describing the group name) and transient keybinding (they
+usually involve a single letter).
+
+> [!NOTE] 
+> tab-bar groups can be ignored, they are provided primarily to organize
+> each tab-bar in the transient.
 
 ``` emacs-lisp
 (setq tbj-groups 
 	'(("prog" ("j" "k" "l" ";" "'" "J" "K" "L" ":" "\""))
 	("prog2" ("n" "m" "," "." "/"))
-	("prog3" ("a" "s" "d" "f" "g"))
-	("prog4" ("z" "x" "c" "v" "b"))
+	("documentation" ("a" "s" "d" "f" "g"))
+	("terminal" ("z" "x" "c" "v" "b"))
 	("notes" ("q" "w" "e" "r" "t" "y"))
 	("org" ("u" "i" "o" "p"))))
 ```
+
+The `tbj-buffer-jump` can be used to navigate between saved buffers
+opened in a given tab-bar. It uses the same groups and keys that are
+set in `tbj-groups`.
 
 ## Additional  commands
 
