@@ -130,11 +130,43 @@ INDEX is the index of that tab in that group."
      (tbj-goto-tab ,group ,index)))
 
 (defun tbj-create-buffer-key (key)
+  "Used to create  a hash table key for  `tbj-buffer-table'. It uses
+the current tab-bar group and index position." 
   (let* ((curr-tab (tab-bar--current-tab))
 	 (group (alist-get 'group curr-tab))
 	 (g-tabs  (tbj-filter-tabs group))
 	 (g-index (cl-position curr-tab g-tabs :test 'equal)))
     (format "%s:%s:%s" key group g-index)))
+
+(defun tbj-buffer-next (&optional previous)
+ "Go to the next saved buffer for the current tab-bar." 
+  (interactive)
+  (if-let* ((curr-tab (tab-bar--current-tab))
+	    (group (alist-get 'group curr-tab))
+	    (g-tabs  (tbj-filter-tabs group))
+	    (g-index (cl-position curr-tab g-tabs :test 'equal))
+	    (table-keys (hash-table-keys tbj-buffer-table))
+	    (buffer-keys  (seq-filter
+			   (lambda (k)
+			     (string-match-p (format "%s:%s" group g-index ) k)) table-keys))
+	    (buffers (mapcar (lambda (k)
+			       (gethash k tbj-buffer-table)) 
+			     buffer-keys)))
+      (let* ((curr-buffer (current-buffer))
+	     (curr-index (cl-position curr-buffer buffers :test 'equal))
+	     (next-index (and curr-index  (mod (funcall (if previous '1- '1+) curr-index) (length buffers))))
+	     (next-buffer (seq-elt buffers (or next-index 0))))
+	(if (buffer-live-p next-buffer)
+	    (switch-to-buffer next-buffer)
+	  (and 
+	   (file-exists-p (buffer-file-name buffer))
+	   (find-file next-buffer))))
+    (message "No buffers saved for the current tab-bar.")))
+
+(defun tbj-buffer-previous ()
+  "Go to the previous saved buffer for the current tab-bar." 
+  (interactive)
+  (tbj-buffer-next t))
 
 (defun tbj-create-goto-buffer-command (key)
   "Create  a go  to  buffer command.  KEY  is the  key  used in  the
