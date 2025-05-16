@@ -109,12 +109,16 @@ complete tab information of the current tab."
 	    (tab-index (cl-position tab (tab-bar-tabs) :test 'equal)))
       (progn
 	(when tab-index
-	  ;; tab-bar-select-tab starts from 1 not 0.
+	  ;; NOTE: tab-bar-select-tab starts from 1 not 0.
 	  (tab-bar-select-tab (1+ tab-index))
 	  (message  "%s::%s" group (1+ tab-group-index))))
     (if (or current-prefix-arg tbj-force-tab-creation)
 	(progn
-	  (tbj-new-tab group))
+	  (if-let* ((g-tabs (tbj-filter-tabs group))
+		    (num-tabs-for-creation (- index (1- (length g-tabs)))))
+	      (cl-loop repeat num-tabs-for-creation do
+		       (tbj-new-tab group))
+	    (tbj-new-tab group)))
       (message  "No tab for position %d" index))))
 
 (defun tbj-create-goto-tab-command (group index)
