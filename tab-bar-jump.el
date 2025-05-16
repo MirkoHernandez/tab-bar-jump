@@ -145,9 +145,9 @@ buffer is assigned to that key."
      (interactive)
      (let* ((buffer-key (tbj-create-buffer-key ,key))
 	    (buffer  (gethash buffer-key tbj-buffer-table)))
-       (cond  ((and buffer (buffer-live-p buffer) (not current-prefix-arg))
+       (cond  ((and (not current-prefix-arg) buffer (buffer-live-p buffer) )
 	       (switch-to-buffer buffer))
-	      ((and buffer (file-exists-p (buffer-file-name buffer)) (not current-prefix-arg))
+	      ((and (not current-prefix-arg) buffer (file-exists-p (buffer-file-name buffer)) )
 	       (find-file (buffer-file-name buffer)))
 	      (t
 	       (puthash buffer-key (current-buffer) tbj-buffer-table))))))
