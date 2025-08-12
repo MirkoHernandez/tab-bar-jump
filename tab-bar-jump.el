@@ -274,11 +274,12 @@ KEYS is a list of strings describing keys."
    (list  group)
    (remove nil
 	   (cl-mapcar (lambda (k)
-			(list k (format "%s"  (if-let ((buffer-name (buffer-file-name (gethash (tbj-create-buffer-key k) tbj-buffer-table)))) 
-							   buffer-name ""))
-			      (tbj-create-goto-buffer-command
-			       k )
-			      ))
+			(let* ((value (gethash (tbj-create-buffer-key k) tbj-buffer-table))
+			       (buffname (or (and value (buffer-file-name value))
+					     (and value (buffer-name value)))))
+			  (list k (format "%s" (or (and  buffname (file-name-nondirectory buffname)) ""))
+				(tbj-create-goto-buffer-command
+				 k))))
 		      keys))))
 
 (defun tbj-redefine-buffer-transient ()
