@@ -50,6 +50,8 @@ Example:
 \(setq tbj-groups =\'((\"group1\" \=(\"a\" \"s\" \"d\" \"f\" \"h\"))
 	(\"group2\" \=(\"j\" \"k\" \"l\" \";\"))))")
 
+
+;; NOTE: ?? is used by transient by default.
 (defvar tbj-buffer-keys
   (append (mapcar 'string (number-sequence ?a ?z))
 	  (mapcar 'string (number-sequence ?A ?Z))
@@ -207,7 +209,7 @@ buffer is assigned to that key."
 	       (switch-to-buffer buffer))
 	      ((and (not current-prefix-arg) buffer (file-exists-p (buffer-file-name buffer)) )
 	       (find-file (buffer-file-name buffer)))
-	      (t
+	      ((yes-or-no-p (format "A buffer is already associated with this key, assign the current buffer?" ,key))
 	       (puthash buffer-key (current-buffer) tbj-buffer-table))))))
 
 (defun tbj-cycle-current-group (&optional reverse)
@@ -381,7 +383,6 @@ GROUP is the tabs group, NAME is the set of group tabs to be restored."
 	 (name (read-string "State: ")))
     (when group
       (tbj-save-group-state group name)))))
-
 
 (defun tbj-restore-state ()
  "Select a group and restore a specific set of tabs previously stored."
