@@ -50,6 +50,13 @@ Example:
 \(setq tbj-groups =\'((\"group1\" \=(\"a\" \"s\" \"d\" \"f\" \"h\"))
 	(\"group2\" \=(\"j\" \"k\" \"l\" \";\"))))")
 
+(defvar tbj-buffer-keys
+  (append (mapcar 'string (number-sequence ?a ?z))
+	  (mapcar 'string (number-sequence ?A ?Z))
+	  (mapcar 'string (number-sequence ?! ?/))
+	  (mapcar 'string (number-sequence ?0 ?9))
+	  (mapcar 'string (number-sequence ?: ?>))))
+
 (defvar tbj-states nil
   "Should be an list of strings describing grouped tab bars possible states.
 Example:
@@ -59,6 +66,10 @@ Example:
 (defvar tbj-max-columns 6
   "Maximum number of columns for tab-bar-jump transient.")
 
+(defvar tbj-buffer-max-columns 12
+  "Maximum number of columns for tab-bar-buffer-jump transient.")
+
+;; TODO: implement row customization.
 (defvar tbj-max-rows 1
 "Maximum number of rows for tab-bar-jump transient.")
 
@@ -262,16 +273,27 @@ KEYS is a list of strings describing keys."
 	       (when (= column (1- tbj-max-columns))
 		 (cl-incf row))))))
 
+(defun tbj-jump ()
+  "Go to a grouped tab-bar defined in `tbj-groups' using `tbj-transient'."
+  (interactive)
+  (if (not tbj-groups)
+      (message "%s" (propertize
+		     "tbj-groups is empty, it should be defined as an ALIST."
+		     'face  'font-lock-warning-face))
+    ;; TODO: cache the transient creation.
+    (tbj-redefine-transient)
+    (tbj-transient)))
+
+;;;; Buffer Navigation
 (transient-define-prefix tbj-buffer-transient ()
   "tbj-buffer-transient is a transient for usage with `tbj-buffer-jump'."
   [[]] [[]] [[]])
 
-(defun tbj-create-buffer-transient-group (group keys)
+(defun tbj-create-buffer-transient-group (keys)
   "Create a transient group for usage with transient.
 GROUP is the name of the tab-bar group.
 KEYS is a list of strings describing keys."
   (vconcat
-   (list  group)
    (remove nil
 	   (cl-mapcar (lambda (k)
 			(let* ((value (gethash (tbj-create-buffer-key k) tbj-buffer-table))
@@ -289,14 +311,16 @@ buffer commands."
   (transient-define-prefix tbj-buffer-transient ()
     "Redefinition of tbj-buffer-transient."
     [[]] [[]] [[]] [[]])
-  (let* ((row 0))
-    (cl-loop for g in tbj-groups
+  (let* (
+	 (grouped-keys (seq-split tbj-buffer-keys 8))
+	 (row 0))
+    (cl-loop for g in grouped-keys
 	     do
-	     (let* ((index  (cl-position g tbj-groups  :test 'equal))
-		    (column (mod index tbj-max-columns)))
+	     (let* ((index  (cl-position g grouped-keys :test 'equal))
+		    (column (mod index tbj-buffer-max-columns)))
 	       (transient-append-suffix 'tbj-buffer-transient (list (1- row) column)
-		 (tbj-create-buffer-transient-group (cl-first g)  (cl-second g)))
-	       (when (= column (1- tbj-max-columns))
+		 (tbj-create-buffer-transient-group  g))
+	       (when (= column (1- tbj-buffer-max-columns))
 		 (cl-incf row))))))
 
 (defun tbj-buffer-jump ()
@@ -309,17 +333,6 @@ buffer commands."
     ;; TODO: cache the transient creation.
     (tbj-redefine-buffer-transient)
     (tbj-buffer-transient)))
-
-(defun tbj-jump ()
-  "Go to a grouped tab-bar defined in `tbj-groups' using `tbj-transient'."
-  (interactive)
-  (if (not tbj-groups)
-      (message "%s" (propertize
-		     "tbj-groups is empty, it should be defined as an ALIST."
-		     'face  'font-lock-warning-face))
-    ;; TODO: cache the transient creation.
-    (tbj-redefine-transient)
-    (tbj-transient)))
 
 ;;;; State - Helpers
 (defun tbj-tab-names (tabs)
