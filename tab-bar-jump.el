@@ -209,7 +209,7 @@ buffer is assigned to that key."
 	       (switch-to-buffer buffer))
 	      ((and (not current-prefix-arg) buffer (file-exists-p (buffer-file-name buffer)) )
 	       (find-file (buffer-file-name buffer)))
-	      ((yes-or-no-p (format "A buffer is already associated with this key, assign the current buffer?" ,key))
+	      ((yes-or-no-p (format "Associate buffer jump with key %s?" ,key))
 	       (puthash buffer-key (current-buffer) tbj-buffer-table))))))
 
 (defun tbj-cycle-current-group (&optional reverse)
@@ -274,7 +274,7 @@ KEYS is a list of strings describing keys."
 		 (tbj-create-transient-group (cl-first g)  (cl-second g)))
 	       (when (= column (1- tbj-max-columns))
 		 (cl-incf row))))))
-
+;;;###autoload
 (defun tbj-jump ()
   "Go to a grouped tab-bar defined in `tbj-groups' using `tbj-transient'."
   (interactive)
@@ -325,6 +325,9 @@ buffer commands."
 	       (when (= column (1- tbj-buffer-max-columns))
 		 (cl-incf row))))))
 
+
+
+;;;###autoload
 (defun tbj-buffer-jump ()
   "Go to a buffer saved in `tbj-buffer-table' using `tbj-buffer-transient'."
   (interactive)
@@ -392,6 +395,37 @@ GROUP is the tabs group, NAME is the set of group tabs to be restored."
 	 (name (when states (completing-read "State: " states))))
     (when (and group  name)
       (tbj-restore-group-state group name))))
+
+;;;; tbj-minor-mode
+(defun tbj-auto-assign-key (&optional buffer)
+  (let* ((available-key (-find
+			 (lambda (k)
+			   (when  (not (gethash (tbj-create-buffer-key k) tbj-buffer-table))
+			     k))
+			 (append
+			  (mapcar  'char-to-string
+				   (string-to-list  (or buffer (buffer-name))))
+			  '("1" "2" "3" "4" "5" "6" "7" "8" "9" "0")))))
+    (when available-key
+      (puthash (tbj-create-buffer-key available-key) (current-buffer) tbj-buffer-table))))
+
+
+;;;###autoload
+(defun tbj-replace-using-current ()
+  (interactive)
+  (let* (key (car (mapcar  'char-to-string
+			   (string-to-list  (buffer-name)))))
+    (when-let ((value (gethash (tbj-create-buffer-key key) tbj-buffer-table)))
+      (tbj-auto-assign-key value))
+    (puthash (tbj-create-buffer-key key) (current-buffer) tbj-buffer-table)))
+
+;;;###autoload
+(define-minor-mode tbj-minor-mode
+  "Minor mode for assigning jump commands automatically, based on buffer's name initial letters."
+  :global t
+  (if tbj-minor-mode
+    (add-hook 'find-file-hook #'tbj-auto-assign-key)
+    (remove-hook 'find-file-hook-hook #'tbj-auto-assign-key)))
 
 (provide 'tab-bar-jump)
 ;;; tab-bar-jump.el ends here.
