@@ -5,7 +5,7 @@
 ;; Author: Mirko Hernandez <mirkoh@fastmail.com>
 ;; Maintainer: Mirko Hernandez <mirkoh@fastmail.com>>
 ;; SPDX-License-Identifier: GPL-3.0-or-later
-;; Version: 0.0.1
+;; Version: 0.1.0
 ;; Keywords: convenience tab-bar
 ;; URL: https://github.com/MirkoHernandez/tab-bar-jump
 ;; Package-Requires: ((emacs "27.1"))
