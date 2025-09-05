@@ -75,6 +75,7 @@ Example:
 (defvar tbj-max-rows 1
 "Maximum number of rows for tab-bar-jump transient.")
 
+;; NOTE: maybe this should be the default and remove this option.
 (defvar tbj-force-tab-creation t
   "If non-nil, `tbj-jump' can create a new tab before selecting it.
 The tab is created only if there  are less that the expected tabs for the
@@ -242,6 +243,7 @@ REVERSE when non-nil cycles the tab-bars backwards."
   (let* ((group (tbj-select-group)))
     (tbj-new-tab group)))
 
+;;;; Transient specific
 (defun tbj-create-transient-group (group keys)
   "Create a transient group for usage with transient.
 GROUP is the name of the tab-bar group.
@@ -313,8 +315,7 @@ buffer commands."
   (transient-define-prefix tbj-buffer-transient ()
     "Redefinition of tbj-buffer-transient."
     [[]] [[]] [[]] [[]])
-  (let* (
-	 (grouped-keys (seq-split tbj-buffer-keys 8))
+  (let* ((grouped-keys (seq-split tbj-buffer-keys 8))
 	 (row 0))
     (cl-loop for g in grouped-keys
 	     do
@@ -324,8 +325,6 @@ buffer commands."
 		 (tbj-create-buffer-transient-group  g))
 	       (when (= column (1- tbj-buffer-max-columns))
 		 (cl-incf row))))))
-
-
 
 ;;;###autoload
 (defun tbj-buffer-jump ()
@@ -408,7 +407,6 @@ GROUP is the tabs group, NAME is the set of group tabs to be restored."
 			  '("1" "2" "3" "4" "5" "6" "7" "8" "9" "0")))))
     (when available-key
       (puthash (tbj-create-buffer-key available-key) (current-buffer) tbj-buffer-table))))
-
 
 ;;;###autoload
 (defun tbj-replace-using-current ()
