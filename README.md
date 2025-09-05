@@ -62,7 +62,9 @@ consisting of a group and a set of keys for navigating tabs
 The `tbj-jump` command then creates and opens a transient using a
 configuration specified in `tbj-groups`: an alist of group names (a
 string describing the group name) and transient keybinding (they
-usually involve a single letter).
+usually involve a single letter). Using the prefix argument (C-u) the
+current window configuration is preserved when creating or jumping to
+another tab bar.
 
 ## tbj-buffer-jump 
 The `tbj-buffer-jump` can be used to assign a key to a buffer that can then be used 

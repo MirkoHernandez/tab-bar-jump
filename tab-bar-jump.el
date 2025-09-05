@@ -148,10 +148,18 @@ for quick access), all the tabs for the group."
 	    (tab-index (cl-position tab (tab-bar-tabs) :test 'equal)))
       (progn
 	(when tab-index
-	  ;; NOTE: tab-bar-select-tab starts from 1 not 0.
-	  (tab-bar-select-tab (1+ tab-index))
+	  (let ((window-config (when current-prefix-arg
+				 ;; (window-state-get (frame-root-window) t)
+				 (current-window-configuration)
+				 )))
+	    ;; NOTE: tab-bar-select-tab starts from 1 not 0.
+	    (tab-bar-select-tab (1+ tab-index))
+	    (when window-config
+	      (set-window-configuration window-config)
+	      ;; (window-state-put window-config (frame-root-window))
+	      ))
 	  (message  "%s::%s" group (1+ tab-group-index))))
-    (if (or current-prefix-arg tbj-force-tab-creation)
+    (if tbj-force-tab-creation
 	(progn
 	  (if-let* ((g-tabs (tbj-filter-tabs group))
 		    (num-tabs-for-creation (- index (1- (length g-tabs)))))
