@@ -210,7 +210,9 @@ buffer is assigned to that key."
 	       (switch-to-buffer buffer))
 	      ((and (not current-prefix-arg) buffer (file-exists-p (buffer-file-name buffer)) )
 	       (find-file (buffer-file-name buffer)))
-	      ((yes-or-no-p (format "Associate buffer jump with key %s?" ,key))
+	      (current-prefix-arg
+	       (puthash buffer-key (current-buffer) tbj-buffer-table))
+	      ((yes-or-no-p (format "Jump to this buffer using %s?" ,key))
 	       (puthash buffer-key (current-buffer) tbj-buffer-table))))))
 
 (defun tbj-cycle-current-group (&optional reverse)
